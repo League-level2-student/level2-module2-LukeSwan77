@@ -29,7 +29,7 @@ int foodX;
 int foodY;
 int direction = UP;
 int foodEaten = 0;
-
+ArrayList<Segment> segments = new ArrayList<Segment>();
 
 //*
 // ***** SETUP METHODS *****
@@ -39,8 +39,8 @@ int foodEaten = 0;
 
 void setup() {
 size(500,500);
-head = new Segment(20,20);
-frameRate(30);  
+head = new Segment(10,10);
+frameRate(10);  
 dropFood();
 }
 
@@ -64,6 +64,8 @@ void draw() {
   drawSnake();
   checkBoundaries();
   eat();
+  fill(255,255,255);
+  text("Score: " + foodEaten, 250, 25);
 }
 
 void drawFood() {
@@ -76,6 +78,7 @@ void drawSnake() {
   //Draw the head of the snake followed by its tail
   fill(355,0,0);
   rect(head.x, head.y, 10, 10);
+  manageTail();
 }
 
 
@@ -86,17 +89,31 @@ void drawSnake() {
 
 void drawTail() {
   //Draw each segment of the tail 
-
+  for(int i = 0; i < segments.size(); i++ ){
+    fill(0,0,255);
+    rect(segments.get(i).x, segments.get(i).y, 10, 10);
+  }
 }
 
 void manageTail() {
   //After drawing the tail, add a new segment at the "start" of the tail and remove the one at the "end" 
   //This produces the illusion of the snake tail moving.
-  
+  checkTailCollision();
+  drawTail();
+  segments.add(new Segment(head.x, head.y));
+  segments.remove(0);
 }
 
 void checkTailCollision() {
   //If the snake crosses its own tail, shrink the tail back to one segment
+  for(int i = 0; i < segments.size(); i++){
+    if(head.x == segments.get(i).x && head.y == segments.get(i).y){
+    foodEaten--;
+    segments.clear();
+    segments.add(new Segment(head.x, head.y));
+    foodEaten = 0;
+  }
+  }
   
 }
 
@@ -109,13 +126,13 @@ void checkTailCollision() {
 
 void keyPressed() {
   //Set the direction of the snake according to the arrow keys pressed
-  if(keyCode == 38){
+  if(keyCode == 38 && direction != DOWN){
     direction = UP;
-  } else if (keyCode == 40){
+  } else if (keyCode == 40 && direction != UP){
     direction = DOWN;
-  } else if (keyCode == 37){
+  } else if (keyCode == 37 && direction != RIGHT){
     direction = LEFT;
-  } else if (keyCode == 39){
+  } else if (keyCode == 39 && direction != LEFT){
     direction = RIGHT;
   }
 }
@@ -126,16 +143,16 @@ void move() {
     
   switch(direction) {
   case UP:
-    head.y--;
+    head.y -= 10;
     break;
   case DOWN:
-    head.y++;
+    head.y += 10;
     break;
   case LEFT:
-   head.x--;
+   head.x -= 10;
     break;
   case RIGHT:
-    head.x++;
+    head.x += 10;
     break;
   }
   
@@ -159,7 +176,8 @@ void checkBoundaries() {
 void eat() {
   //When the snake eats the food, its tail should grow and more food appear
     if (head.x == foodX && head.y == foodY){
-      foodEaten = 2;
+      foodEaten++;
       dropFood();
+      segments.add(new Segment(head.x, head.y));
     }
 }
